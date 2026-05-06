@@ -160,10 +160,10 @@ export default function VerifyPayement() {
                 </div>
                 <span style={{
                   ...styles.statusPill,
-                  backgroundColor: s.paymentStatus === 'approved' ? '#ecfdf5' : '#fffbeb',
-                  color: s.paymentStatus === 'approved' ? '#059669' : '#d97706',
+                  backgroundColor: s.collegeType !== 'within' ? '#f3f4f6' : (s.paymentStatus === 'approved' ? '#ecfdf5' : '#fffbeb'),
+                  color: s.collegeType !== 'within' ? '#4b5563' : (s.paymentStatus === 'approved' ? '#059669' : '#d97706'),
                 }}>
-                  {s.paymentStatus === 'approved' ? '✓ Verified' : '⏳ Pending'}
+                  {s.collegeType !== 'within' ? 'Outside College' : (s.paymentStatus === 'approved' ? '✓ Verified' : '⏳ Pending')}
                 </span>
               </div>
 
@@ -181,12 +181,14 @@ export default function VerifyPayement() {
                   <span style={styles.detailKey}>Phone</span>
                   <span style={styles.detailVal}>{s.mobile || '—'}</span>
                 </div>
-                <div style={styles.detailItem}>
-                  <span style={styles.detailKey}>Amount</span>
-                  <span style={{ ...styles.detailVal, color: '#4f46e5', fontWeight: '700' }}>
-                    ₹900
-                  </span>
-                </div>
+                {s.collegeType === 'within' && (
+                  <div style={styles.detailItem}>
+                    <span style={styles.detailKey}>Amount</span>
+                    <span style={{ ...styles.detailVal, color: '#4f46e5', fontWeight: '700' }}>
+                      ₹900
+                    </span>
+                  </div>
+                )}
                 <div style={styles.detailItem}>
                   <span style={styles.detailKey}>Roll No</span>
                   <span style={styles.detailVal}>{s.rollNumber || '—'}</span>
@@ -214,7 +216,7 @@ export default function VerifyPayement() {
               </div>
 
               {/* Action */}
-              {s.paymentStatus !== 'approved' && (
+              {s.collegeType === 'within' && s.paymentStatus !== 'approved' && (
                 <button
                   style={{
                     ...styles.verifyBtn,
@@ -239,7 +241,7 @@ export default function VerifyPayement() {
                   )}
                 </button>
               )}
-              {s.paymentStatus === 'approved' && (
+              {s.collegeType === 'within' && s.paymentStatus === 'approved' && (
                 <div style={styles.verifiedLabel}>
                   <svg width="15" height="15" fill="none" stroke="#059669" strokeWidth="2.5" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />

@@ -95,17 +95,20 @@ export default function EventsPage() {
       const enrichedData = await Promise.all(
         enrolledData.map(async (student) => {
           let paymentStatus = 'pending';
+          let collegeType = student.collegeType || 'within';
           if (student.uid) {
             try {
               const userSnap = await getDoc(doc(db, 'users', student.uid));
               if (userSnap.exists()) {
-                paymentStatus = userSnap.data().paymentStatus || 'pending';
+                const userData = userSnap.data();
+                paymentStatus = userData.paymentStatus || 'pending';
+                collegeType = userData.collegeType || collegeType;
               }
             } catch (e) {
               console.error(`Error fetching user ${student.uid}`, e);
             }
           }
-          return { ...student, paymentStatus };
+          return { ...student, paymentStatus, collegeType };
         })
       );
       setStudents(enrichedData);
@@ -239,13 +242,23 @@ export default function EventsPage() {
                       {s.enrolledAt ? new Date(s.enrolledAt.toDate ? s.enrolledAt.toDate() : s.enrolledAt).toLocaleDateString() : '—'}
                     </td>
                     <td style={styles.td}>
-                      <span style={{
-                        ...styles.statusChip,
-                        backgroundColor: isApproved ? '#ecfdf5' : '#fffbeb',
-                        color: isApproved ? '#059669' : '#d97706',
-                      }}>
-                        {isApproved ? 'Approved' : 'Pending'}
-                      </span>
+                      {s.collegeType !== 'within' ? (
+                        <span style={{
+                          ...styles.statusChip,
+                          backgroundColor: '#f3f4f6',
+                          color: '#4b5563',
+                        }}>
+                          Outside College
+                        </span>
+                      ) : (
+                        <span style={{
+                          ...styles.statusChip,
+                          backgroundColor: isApproved ? '#ecfdf5' : '#fffbeb',
+                          color: isApproved ? '#059669' : '#d97706',
+                        }}>
+                          {isApproved ? 'Approved' : 'Pending'}
+                        </span>
+                      )}
                     </td>
                   </tr>
                 );
