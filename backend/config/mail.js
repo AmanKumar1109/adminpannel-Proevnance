@@ -5,7 +5,7 @@ dotenv.config();
 const transporter = nodeMailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
-  secure: true, // true for 465, false for other ports
+  secure: true,
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAIL_PASSWORD,
@@ -14,52 +14,113 @@ const transporter = nodeMailer.createTransport({
 
 const sendMail = async (to, name, registerid) => {
   const htmlContent = `
-    <div style="background-color: #050505; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 40px 20px;">
-      <div style="max-width: 600px; margin: 0 auto; background-color: #0f0f13; border-radius: 8px; overflow: hidden; border: 1px solid #1f1f2e;">
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    </head>
+    <body style="margin:0; padding:0; background:#0a0a0f;">
+    <div style="background:#0a0a0f; padding:32px 16px; font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+      <div style="max-width:600px; margin:0 auto; border-radius:12px; overflow:hidden; border:1px solid #2a1a4a;">
+
+        <!-- Top gradient bar -->
+        <div style="height:4px; background:linear-gradient(90deg,#7c3aed,#ec4899,#06b6d4);"></div>
+
         <!-- Header -->
-        <div style="text-align: center; padding: 30px 20px; border-bottom: 1px solid #1f1f2e;">
-          <h1 style="margin: 0; color: #ff66cc; font-size: 28px; letter-spacing: 2px; text-transform: uppercase;">PROVENANCE 6.0</h1>
-          <p style="color: #8888aa; font-size: 14px; margin-top: 10px; margin-bottom: 0;">Infinite Realms - The Anime Protocol</p>
+        <div style="background:linear-gradient(135deg,#0f0820 0%,#130a2a 60%,#0a1628 100%); padding:36px 30px 28px; text-align:center; border-bottom:1px solid #1f1f3a;">
+          <div style="display:inline-block; border:1px solid rgba(124,58,237,0.4); border-radius:50%; width:56px; height:56px; line-height:56px; font-size:26px; margin-bottom:18px; background:rgba(124,58,237,0.12);">&#9889;</div>
+          <h1 style="margin:0 0 10px; color:#e879f9; font-size:22px; letter-spacing:3px; text-transform:uppercase; font-weight:700; font-family:'Press Start 2P', 'Courier New', monospace; line-height:1.4;">PROVENANCE 6.0</h1>
+          <p style="color:#7c6fa0; font-size:13px; margin:0; letter-spacing:2px; text-transform:uppercase;">Infinite Realms &middot; The Anime Protocol</p>
         </div>
-        
-        <!-- Content -->
-        <div style="padding: 40px 30px;">
-          <div style="background-color: #16161e; border-radius: 6px; padding: 25px; border-top: 3px solid #00e5ff; margin-bottom: 25px;">
-            <h2 style="font-size: 22px; color: #ffffff; margin-bottom: 15px; margin-top: 0;">Payment Verified!</h2>
-            <p style="color: #b0b0c0; line-height: 1.6; margin-bottom: 25px; font-size: 15px;">
-              Hello <strong style="color: #ffffff;">${name}</strong>,<br><br>
-              We are thrilled to inform you that your payment for PROVENANCE 6.0 has been successfully verified. You are now officially registered for the event.
-            </p>
-            
-            <div style="background-color: #0a0a0f; border-radius: 6px; padding: 20px; margin-bottom: 25px; border: 1px solid #1f1f2e;">
-              <div style="margin-bottom: 15px;">
-                <span style="color: #8888aa; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px;">Student Name</span>
-                <span style="color: #ffffff; font-size: 18px; font-weight: bold; letter-spacing: 1px;">${name}</span>
+
+        <!-- Main content -->
+        <div style="background:#0f0f1a; padding:36px 30px;">
+
+          <!-- Payment verified badge -->
+          <div style="text-align:center; margin-bottom:28px;">
+            <span style="display:inline-block; background:rgba(6,182,212,0.1); border:1px solid rgba(6,182,212,0.3); border-radius:999px; padding:8px 22px; color:#06b6d4; font-size:13px; letter-spacing:1.5px; text-transform:uppercase; font-weight:600;">
+              &#9679;&nbsp; Payment Verified
+            </span>
+          </div>
+
+          <!-- Greeting -->
+          <p style="color:#c4b5d4; font-size:16px; line-height:1.7; margin:0 0 28px;">
+            Hello <strong style="color:#ffffff;">${name}</strong>,<br><br>
+            Your payment for <strong style="color:#e879f9;">PROVENANCE 6.0</strong> has been successfully verified. You are now officially part of the most anticipated techno-cultural fest in Jharkhand. Get ready to enter the <strong style="color:#06b6d4;">Infinite Realms</strong>!
+          </p>
+
+          <!-- Registration details card -->
+          <div style="background:linear-gradient(135deg,#0a0a18,#110a22); border-radius:10px; border:1px solid rgba(124,58,237,0.35); overflow:hidden; margin-bottom:28px;">
+            <div style="background:linear-gradient(90deg,rgba(124,58,237,0.25),rgba(236,72,153,0.15)); padding:12px 20px; border-bottom:1px solid rgba(124,58,237,0.2);">
+              <span style="color:#a78bfa; font-size:11px; letter-spacing:2px; text-transform:uppercase; font-weight:600;">Your Registration Details</span>
+            </div>
+            <div style="padding:22px 20px;">
+              <div style="margin-bottom:18px;">
+                <span style="color:#6b5fa0; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; display:block; margin-bottom:6px;">Student Name</span>
+                <span style="color:#ffffff; font-size:20px; font-weight:700;">${name}</span>
               </div>
               <div>
-                <span style="color: #8888aa; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px;">Registration ID</span>
-                <span style="color: #00e5ff; font-size: 22px; font-weight: bold; letter-spacing: 2px;">${registerid}</span>
+                <span style="color:#6b5fa0; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; display:block; margin-bottom:6px;">Registration ID</span>
+                <span style="color:#06b6d4; font-size:26px; font-weight:800; letter-spacing:3px; font-family:monospace;">${registerid}</span>
               </div>
             </div>
-            
-            <p style="color: #b0b0c0; line-height: 1.6; margin-bottom: 0; font-size: 15px;">
-              Please keep this Registration ID handy for all event-related access. Get ready to experience the infinite realms!
-            </p>
           </div>
+
+          <!-- Info hint -->
+          <table style="width:100%; border-collapse:collapse; margin-bottom:28px;">
+            <tr>
+              <td style="background:rgba(124,58,237,0.08); border:1px solid rgba(124,58,237,0.2); border-radius:8px; padding:16px 18px;">
+                <table style="width:100%; border-collapse:collapse;">
+                  <tr>
+                    <td style="width:28px; vertical-align:top; padding-top:2px; font-size:20px;">&#127903;</td>
+                    <td style="color:#9d8fc0; font-size:14px; line-height:1.65; padding-left:12px;">
+                      Keep your <strong style="color:#e2d9f3;">Registration ID</strong> handy for event check-ins and all access. Show it at the venue gate to claim your spot.
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Stats row -->
+          <table style="width:100%; border-collapse:separate; border-spacing:10px;">
+            <tr>
+              <td style="background:#0a0a18; border:1px solid #1f1a30; border-radius:8px; padding:14px 10px; text-align:center; width:33%;">
+                <div style="color:#e879f9; font-size:18px; font-weight:700;">5,000+</div>
+                <div style="color:#6b5fa0; font-size:11px; letter-spacing:1px; text-transform:uppercase; margin-top:4px;">Attendees</div>
+              </td>
+              <td style="background:#0a0a18; border:1px solid #1f1a30; border-radius:8px; padding:14px 10px; text-align:center; width:33%;">
+                <div style="color:#06b6d4; font-size:18px; font-weight:700;">50+</div>
+                <div style="color:#6b5fa0; font-size:11px; letter-spacing:1px; text-transform:uppercase; margin-top:4px;">Events</div>
+              </td>
+              <td style="background:#0a0a18; border:1px solid #1f1a30; border-radius:8px; padding:14px 10px; text-align:center; width:33%;">
+                <div style="color:#a78bfa; font-size:18px; font-weight:700;">National</div>
+                <div style="color:#6b5fa0; font-size:11px; letter-spacing:1px; text-transform:uppercase; margin-top:4px;">Reach</div>
+              </td>
+            </tr>
+          </table>
+
         </div>
-        
+
         <!-- Footer -->
-        <div style="text-align: center; padding: 20px; color: #555566; font-size: 12px; border-top: 1px solid #1f1f2e; background-color: #0a0a0f;">
-          &copy; 2026 Provenance Organizing Committee.<br>RVSCET, Jamshedpur
+        <div style="background:#070710; padding:22px 30px; text-align:center; border-top:1px solid #1a1a2e;">
+          <p style="color:#4a4060; font-size:12px; margin:0 0 4px;">&copy; 2026 Provenance Organizing Committee</p>
+          <p style="color:#4a4060; font-size:12px; margin:0;">RVSCET, Jamshedpur &middot; Jharkhand, India</p>
         </div>
+
+        <!-- Bottom gradient bar -->
+        <div style="height:3px; background:linear-gradient(90deg,#06b6d4,#7c3aed,#ec4899);"></div>
+
       </div>
     </div>
+    </body>
+    </html>
   `;
 
   transporter.sendMail({
     from: process.env.EMAIL,
     to: to,
-    subject: "PROVENANCE 6.0 - Payment Verified",
+    subject: "PROVENANCE 6.0 - Payment Verified ✅",
     html: htmlContent,
   });
 };
