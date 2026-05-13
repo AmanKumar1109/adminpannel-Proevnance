@@ -3,6 +3,7 @@ import { collection, getDocs, doc, getDoc, getCountFromServer } from 'firebase/f
 import { db } from '../../firebase';
 
 const EVENT_NAMES = [
+  // HELIX — Tech & AI Club
   "Eminence in Prompt",
   "Shinobi Script",
   "Mangaka's Edge",
@@ -11,17 +12,21 @@ const EVENT_NAMES = [
   "Trigger-Point: BGMI Arena",
   "Colors of Konoha",
   "Sage Mode: Trivia",
+  "Talk-no-Jutsu",
+  // TARANGINI — Cultural Club
   "Paper Dance",
-  "Street Reloaded",
-  "Solo Song",
+  "DandaDance (Street Reloaded)",
+  "Karaoke-ON — Solo Singing",
   "Dressing My Darling",
-  "My Dance Academia",
+  "My Dance Academia — Group Dance",
   "Komi Can Paint",
   "Jojo's Bizarre Walk",
+  // XPECTRA — Media & Digital Creative
   "Sharingan Lens",
   "Infinite Scroll",
   "Ai X Film",
   "Food Wars",
+  // RVS PANTHERS — Sports Club
   "Street Strikers",
   "Slam Dunk",
   "Karasuno Smash",
@@ -29,15 +34,17 @@ const EVENT_NAMES = [
   "Tug Of Titans",
   "Iron Grip",
   "Attack On Chairs",
+  "Kaminari-Strike: (Supersixes)",
+  // CIRCUITRON — Robotics & IoT Club
   "Gundam Architecture",
   "Shikamaru's Cube",
   "Cyber-Runner: Edge",
   "Fullmetal Kick Off",
   "Gundam: Last Stand",
   "Shinobi Balloon Smash",
-  "Finding One Piece",
+  "The Labyrinth",
   "Senku's Bridge",
-  "Debate Competition",
+  // INDEPENDENT EVENTS
   "Flip & Win"
 ];
 
@@ -47,6 +54,7 @@ export default function EventsPage() {
   // States for Events Grid
   const [counts, setCounts] = useState({});
   const [loadingCounts, setLoadingCounts] = useState(true);
+  const [eventSearch, setEventSearch] = useState('');
 
   // States for Event Details
   const [students, setStudents] = useState([]);
@@ -91,24 +99,56 @@ export default function EventsPage() {
       const snap = await getDocs(collection(db, eventName));
       const enrolledData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-      // Fetch payment status for each user
+      // Fetch user profile data to enrich event enrollment data with all architecture fields
       const enrichedData = await Promise.all(
         enrolledData.map(async (student) => {
-          let paymentStatus = 'pending';
-          let collegeType = student.collegeType || 'within';
+          let userProfileData = {};
           if (student.uid) {
             try {
               const userSnap = await getDoc(doc(db, 'users', student.uid));
               if (userSnap.exists()) {
-                const userData = userSnap.data();
-                paymentStatus = userData.paymentStatus || 'pending';
-                collegeType = userData.collegeType || collegeType;
+                userProfileData = userSnap.data();
               }
             } catch (e) {
               console.error(`Error fetching user ${student.uid}`, e);
             }
           }
-          return { ...student, paymentStatus, collegeType };
+
+          // Resolve primary fields fallback between student event record and user document
+          const regId = student.registrationId || student.registerationId || userProfileData.registrationId || userProfileData.registerationId || '—';
+          
+          let evtPayStatus = student.eventPaymentStatus;
+          let entryFee = student.entryFee;
+          let transactionId = student.transactionId || userProfileData.transactionId;
+          let paymentApp = student.paymentApp || userProfileData.paymentApp;
+
+          // If entry fee/event payment status is missing on student doc, check registeredEventsDetails array in global user profile
+          if (userProfileData.registeredEventsDetails) {
+            const foundDetail = userProfileData.registeredEventsDetails.find(d => d.title === eventName);
+            if (foundDetail) {
+              if (!evtPayStatus) evtPayStatus = foundDetail.eventPaymentStatus;
+              if (entryFee === undefined) entryFee = foundDetail.entryFee;
+              if (foundDetail.transactionId) transactionId = foundDetail.transactionId;
+              if (foundDetail.paymentApp) paymentApp = foundDetail.paymentApp;
+            }
+          }
+
+          return {
+            ...student,
+            userFallbackData: userProfileData,
+            collegeType: student.collegeType || userProfileData.collegeType || 'within',
+            collegeName: student.collegeName || userProfileData.collegeName || 'N/A',
+            branch: student.branch || userProfileData.branch || 'N/A',
+            year: student.year || userProfileData.year || 'N/A',
+            rollNumber: student.rollNumber || userProfileData.rollNumber || 'N/A',
+            tshirtSize: student.tshirtSize || userProfileData.tshirtSize || 'N/A',
+            paymentStatus: userProfileData.paymentStatus || 'pending', // Global Base Registration Status
+            eventPaymentStatus: evtPayStatus || (entryFee ? 'pending' : 'verified'),
+            entryFee: entryFee || 0,
+            transactionId: transactionId || '—',
+            paymentApp: paymentApp || '—',
+            regId,
+          };
         })
       );
       setStudents(enrichedData);
@@ -125,20 +165,52 @@ export default function EventsPage() {
       (s.name || '').toLowerCase().includes(q) ||
       (s.email || '').toLowerCase().includes(q) ||
       (s.mobile || '').toLowerCase().includes(q) ||
-      (s.registerationId || '').toLowerCase().includes(q)
+      (s.regId || '').toLowerCase().includes(q) ||
+      (s.registerationId || '').toLowerCase().includes(q) ||
+      (s.teamName || '').toLowerCase().includes(q) ||
+      (s.collegeName || '').toLowerCase().includes(q) ||
+      (s.branch || '').toLowerCase().includes(q) ||
+      (s.transactionId || '').toLowerCase().includes(q)
     );
   });
+
+  // Filter events by search query
+  const filteredEvents = EVENT_NAMES.filter((name) =>
+    name.toLowerCase().includes(eventSearch.toLowerCase())
+  );
 
   // Render Grid
   if (!selectedEvent) {
     return (
       <div>
-        <div style={styles.header}>
+        <div className="admin-events-header" style={styles.header}>
           <div>
             <h2 style={styles.pageHeading}>Events Overview</h2>
             <p style={styles.pageSub}>Select an event to view registered students</p>
           </div>
-          <div style={styles.countBadge}>{EVENT_NAMES.length} Events</div>
+          <div style={styles.countBadge}>{filteredEvents.length} / {EVENT_NAMES.length} Events</div>
+        </div>
+
+        {/* Event Search Bar */}
+        <div style={styles.searchWrap}>
+          <svg style={styles.searchIcon} width="16" height="16" fill="none" stroke="#9ca3af" strokeWidth="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            style={styles.searchInput}
+            placeholder="Search events by name..."
+            value={eventSearch}
+            onChange={(e) => setEventSearch(e.target.value)}
+          />
+          {eventSearch && (
+            <button
+              onClick={() => setEventSearch('')}
+              style={styles.searchClear}
+              title="Clear search"
+            >
+              ✕
+            </button>
+          )}
         </div>
 
         {loadingCounts ? (
@@ -146,9 +218,13 @@ export default function EventsPage() {
             <div style={styles.spinner} />
             <p style={styles.emptyText}>Loading events...</p>
           </div>
+        ) : filteredEvents.length === 0 ? (
+          <div style={styles.emptyState}>
+            <p style={styles.emptyText}>No events match "{eventSearch}"</p>
+          </div>
         ) : (
-          <div style={styles.eventGrid}>
-            {EVENT_NAMES.map((name) => (
+          <div className="admin-event-grid" style={styles.eventGrid}>
+            {filteredEvents.map((name) => (
               <div key={name} style={styles.eventCard} onClick={() => handleEventClick(name)}>
                 <div style={styles.eventCardTop}>
                   <div style={styles.eventIcon}>
@@ -177,7 +253,7 @@ export default function EventsPage() {
   return (
     <div>
       {/* Back & Header */}
-      <div style={styles.header}>
+      <div className="admin-events-header" style={styles.header}>
         <div>
           <button style={styles.backBtn} onClick={() => setSelectedEvent(null)}>
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -186,7 +262,7 @@ export default function EventsPage() {
             Back to Events
           </button>
           <h2 style={styles.pageHeading}>{selectedEvent}</h2>
-          <p style={styles.pageSub}>Registered participants list</p>
+          <p style={styles.pageSub}>Registered participants list enriched with full profile & team details</p>
         </div>
         <div style={styles.countBadge}>{students.length} Registered</div>
       </div>
@@ -198,7 +274,7 @@ export default function EventsPage() {
         </svg>
         <input
           style={styles.searchInput}
-          placeholder="Search by name, email, phone or reg ID..."
+          placeholder="Search by name, email, phone, reg ID, college, branch or TXN ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -209,7 +285,7 @@ export default function EventsPage() {
         {loadingDetails ? (
           <div style={styles.emptyState}>
             <div style={styles.spinner} />
-            <p style={styles.emptyText}>Loading participants...</p>
+            <p style={styles.emptyText}>Loading participants & enriching profiles...</p>
           </div>
         ) : filteredStudents.length === 0 ? (
           <div style={styles.emptyState}>
@@ -217,48 +293,133 @@ export default function EventsPage() {
               <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
               <circle cx="9" cy="7" r="4" />
             </svg>
-            <p style={styles.emptyText}>{search ? 'No results found' : 'No registrations yet'}</p>
+            <p style={styles.emptyText}>{search ? 'No results found matching your search' : 'No registrations yet for this event'}</p>
           </div>
         ) : (
           <table style={styles.table}>
             <thead>
               <tr>
-                {['#', 'Name', 'Email', 'Phone', 'Reg ID', 'Date', 'Payment Status'].map((h) => (
-                  <th key={h} style={styles.th}>{h}</th>
-                ))}
+                <th style={styles.th}>#</th>
+                <th style={styles.th}>Participant / Team</th>
+                <th style={styles.th}>Contact Info</th>
+                <th style={styles.th}>Academic Details</th>
+                <th style={styles.th}>Event Entry & Fee</th>
+                <th style={styles.th}>Base Reg Status</th>
+                <th style={styles.th}>Enrolled Date</th>
               </tr>
             </thead>
             <tbody>
               {filteredStudents.map((s, idx) => {
-                const isApproved = s.paymentStatus === 'approved';
+                const isBaseVerified = s.paymentStatus === 'verified' || s.paymentStatus === 'approved';
                 return (
                   <tr key={s.id} style={idx % 2 === 0 ? styles.trEven : styles.trOdd}>
                     <td style={styles.td}>{idx + 1}</td>
-                    <td style={styles.tdBold}>{s.name || '—'}</td>
-                    <td style={styles.td}>{s.email || '—'}</td>
-                    <td style={styles.td}>{s.mobile || '—'}</td>
-                    <td style={styles.td}>{s.registerationId || '—'}</td>
-                    <td style={styles.td}>
-                      {s.enrolledAt ? new Date(s.enrolledAt.toDate ? s.enrolledAt.toDate() : s.enrolledAt).toLocaleDateString() : '—'}
+                    
+                    {/* Participant / Team */}
+                    <td style={styles.tdWrapper}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: '600', color: '#1e1e2e', fontSize: '14px' }}>{s.name || '—'}</span>
+                          <span style={{ fontSize: '11px', background: '#f0eeff', color: '#4f46e5', padding: '2px 8px', borderRadius: '6px', fontWeight: '600' }}>
+                            ID: {s.regId}
+                          </span>
+                          {s.role && (
+                            <span style={{ fontSize: '10px', background: '#e0e7ff', color: '#3730a3', padding: '1px 6px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: '700' }}>
+                              {s.role}
+                            </span>
+                          )}
+                        </div>
+
+                        {s.isTeamEntry && (
+                          <div style={{ marginTop: '4px', paddingTop: '4px', borderTop: '1px dashed #e8eaf0', fontSize: '12px', color: '#4b5563' }}>
+                            <div>Team Name: <strong style={{ color: '#1e1e2e' }}>{s.teamName || 'N/A'}</strong> {s.teamType && <span style={{ fontSize: '10px', textTransform: 'uppercase', color: '#6b7280' }}>({s.teamType})</span>}</div>
+                            {s.teamMembers && s.teamMembers.length > 0 && (
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px', alignItems: 'center' }}>
+                                <span style={{ fontSize: '10px', color: '#9ca3af' }}>Teammate IDs:</span>
+                                {s.teamMembers.map((mId, mIdx) => (
+                                  <span key={mIdx} style={{ fontSize: '10px', background: '#f3f4f6', color: '#374151', padding: '1px 6px', borderRadius: '4px', fontFamily: 'monospace' }}>
+                                    {typeof mId === 'object' ? mId.id || mId.name : mId}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </td>
+
+                    {/* Contact Info */}
+                    <td style={styles.tdWrapper}>
+                      <div style={{ fontSize: '13px', color: '#4b5563', lineHeight: '1.5' }}>
+                        <div>📧 {s.email || '—'}</div>
+                        <div>📞 {s.mobile || '—'}</div>
+                      </div>
+                    </td>
+
+                    {/* Academic Details */}
+                    <td style={styles.tdWrapper}>
+                      <div style={{ fontSize: '12px', color: '#4b5563', lineHeight: '1.4' }}>
+                        <div style={{ fontWeight: '500', color: '#1e1e2e' }}>{s.collegeName || 'N/A'}</div>
+                        <div><span style={{ color: '#9ca3af' }}>Branch:</span> {s.branch || 'N/A'} • <span style={{ color: '#9ca3af' }}>Year:</span> {s.year || 'N/A'}</div>
+                        {s.collegeType === 'within' && (
+                          <div style={{ display: 'flex', gap: '6px', marginTop: '3px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '10px', background: '#f3f4f6', padding: '1px 5px', borderRadius: '4px', color: '#4b5563' }}>Roll: {s.rollNumber || 'N/A'}</span>
+                            {s.tshirtSize && s.tshirtSize !== 'N/A' && <span style={{ fontSize: '10px', background: '#f3f4f6', padding: '1px 5px', borderRadius: '4px', color: '#4b5563' }}>T-Shirt: {s.tshirtSize}</span>}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Event Entry & Fee */}
+                    <td style={styles.tdWrapper}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '13px', fontWeight: '700', color: s.entryFee > 0 ? '#d97706' : '#059669' }}>
+                            {s.entryFee > 0 ? `₹${s.entryFee}` : 'Free Entry'}
+                          </span>
+                          {s.entryFee > 0 && (
+                            <span style={{
+                              fontSize: '10px',
+                              fontWeight: '700',
+                              textTransform: 'uppercase',
+                              padding: '2px 6px',
+                              borderRadius: '10px',
+                              backgroundColor: s.eventPaymentStatus === 'verified' ? '#ecfdf5' : s.eventPaymentStatus === 'reviewing' ? '#eff6ff' : '#fffbeb',
+                              color: s.eventPaymentStatus === 'verified' ? '#059669' : s.eventPaymentStatus === 'reviewing' ? '#2563eb' : '#d97706',
+                              border: `1px solid ${s.eventPaymentStatus === 'verified' ? '#a7f3d0' : s.eventPaymentStatus === 'reviewing' ? '#bfdbfe' : '#fde68a'}`
+                            }}>
+                              {s.eventPaymentStatus}
+                            </span>
+                          )}
+                        </div>
+                        {s.entryFee > 0 && s.transactionId && s.transactionId !== '—' && (
+                          <div style={{ fontSize: '10px', color: '#6b7280', fontFamily: 'monospace' }}>
+                            TXN: {s.transactionId} {s.paymentApp && s.paymentApp !== '—' && `(${s.paymentApp})`}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Base Reg Status */}
                     <td style={styles.td}>
                       {s.collegeType !== 'within' ? (
-                        <span style={{
-                          ...styles.statusChip,
-                          backgroundColor: '#f3f4f6',
-                          color: '#4b5563',
-                        }}>
+                        <span style={{ ...styles.statusChip, backgroundColor: '#eef2ff', color: '#4f46e5' }}>
                           Outside College
                         </span>
                       ) : (
                         <span style={{
                           ...styles.statusChip,
-                          backgroundColor: isApproved ? '#ecfdf5' : '#fffbeb',
-                          color: isApproved ? '#059669' : '#d97706',
+                          backgroundColor: isBaseVerified ? '#ecfdf5' : s.paymentStatus === 'reviewing' ? '#eff6ff' : '#fffbeb',
+                          color: isBaseVerified ? '#059669' : s.paymentStatus === 'reviewing' ? '#2563eb' : '#d97706',
                         }}>
-                          {isApproved ? 'Approved' : 'Pending'}
+                          {isBaseVerified ? 'Verified' : s.paymentStatus ? s.paymentStatus.charAt(0).toUpperCase() + s.paymentStatus.slice(1) : 'Pending'}
                         </span>
                       )}
+                    </td>
+
+                    {/* Enrolled Date */}
+                    <td style={styles.td}>
+                      {s.enrolledAt ? new Date(s.enrolledAt.toDate ? s.enrolledAt.toDate() : s.enrolledAt).toLocaleDateString() : '—'}
                     </td>
                   </tr>
                 );
@@ -296,6 +457,7 @@ const styles = {
     borderRadius: '20px',
     fontSize: '13px',
     fontWeight: '600',
+    flexShrink: 0,
   },
   backBtn: {
     display: 'flex',
@@ -380,7 +542,7 @@ const styles = {
   },
   searchInput: {
     width: '100%',
-    padding: '11px 14px 11px 42px',
+    padding: '11px 36px 11px 42px',
     border: '1px solid #e5e7eb',
     borderRadius: '10px',
     fontSize: '14px',
@@ -389,11 +551,26 @@ const styles = {
     outline: 'none',
     boxSizing: 'border-box',
   },
+  searchClear: {
+    position: 'absolute',
+    right: '12px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'none',
+    border: 'none',
+    color: '#9ca3af',
+    fontSize: '16px',
+    cursor: 'pointer',
+    padding: '2px 6px',
+    borderRadius: '4px',
+    lineHeight: 1,
+  },
   tableWrap: {
     backgroundColor: '#ffffff',
     borderRadius: '14px',
     border: '1px solid #e8eaf0',
     overflow: 'auto',
+    WebkitOverflowScrolling: 'touch',
   },
   emptyState: {
     display: 'flex',
@@ -420,10 +597,10 @@ const styles = {
   table: {
     width: '100%',
     borderCollapse: 'collapse',
-    minWidth: '700px',
+    minWidth: '850px',
   },
   th: {
-    padding: '13px 18px',
+    padding: '13px 16px',
     textAlign: 'left',
     fontSize: '11px',
     fontWeight: '700',
@@ -432,19 +609,22 @@ const styles = {
     textTransform: 'uppercase',
     backgroundColor: '#f9fafb',
     borderBottom: '1px solid #f0f2f7',
+    whiteSpace: 'nowrap',
   },
   td: {
-    padding: '13px 18px',
+    padding: '13px 16px',
     fontSize: '13px',
     color: '#6b7280',
     borderBottom: '1px solid #f9fafb',
+    whiteSpace: 'nowrap',
+    verticalAlign: 'middle',
   },
-  tdBold: {
-    padding: '13px 18px',
-    fontSize: '13px',
-    color: '#1e1e2e',
-    fontWeight: '600',
+  tdWrapper: {
+    padding: '12px 16px',
     borderBottom: '1px solid #f9fafb',
+    verticalAlign: 'middle',
+    whiteSpace: 'normal',
+    minWidth: '180px',
   },
   trEven: { backgroundColor: '#ffffff' },
   trOdd: { backgroundColor: '#fafafa' },
@@ -453,5 +633,6 @@ const styles = {
     borderRadius: '12px',
     fontSize: '12px',
     fontWeight: '600',
+    display: 'inline-block',
   },
 };

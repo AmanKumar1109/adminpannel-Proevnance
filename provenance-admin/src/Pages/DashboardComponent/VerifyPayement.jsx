@@ -75,7 +75,7 @@ export default function VerifyPayement() {
   return (
     <div>
       {/* Header */}
-      <div style={styles.header}>
+      <div className="admin-verify-header" style={styles.header}>
         <div>
           <h2 style={styles.pageHeading}>Verify Payments</h2>
           <p style={styles.pageSub}>Review and approve student payment submissions</p>
@@ -91,23 +91,23 @@ export default function VerifyPayement() {
       </div>
 
       {/* Summary Pills */}
-      <div style={styles.summaryRow}>
-        <div style={styles.summaryCard}>
+      <div className="admin-summary-row" style={styles.summaryRow}>
+        <div className="admin-summary-card" style={styles.summaryCard}>
           <span style={styles.summaryNum}>{students.length}</span>
           <span style={styles.summaryLabel}>Total</span>
         </div>
-        <div style={{ ...styles.summaryCard, backgroundColor: '#fffbeb' }}>
+        <div className="admin-summary-card" style={{ ...styles.summaryCard, backgroundColor: '#fffbeb' }}>
           <span style={{ ...styles.summaryNum, color: '#d97706' }}>{pendingCount}</span>
           <span style={styles.summaryLabel}>Pending</span>
         </div>
-        <div style={{ ...styles.summaryCard, backgroundColor: '#ecfdf5' }}>
+        <div className="admin-summary-card" style={{ ...styles.summaryCard, backgroundColor: '#ecfdf5' }}>
           <span style={{ ...styles.summaryNum, color: '#059669' }}>{verifiedCount}</span>
           <span style={styles.summaryLabel}>Verified</span>
         </div>
       </div>
 
       {/* Controls */}
-      <div style={styles.controls}>
+      <div className="admin-controls" style={styles.controls}>
         <div style={styles.searchWrap}>
           <svg style={styles.searchIcon} width="15" height="15" fill="none" stroke="#9ca3af" strokeWidth="2" viewBox="0 0 24 24">
             <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -146,7 +146,7 @@ export default function VerifyPayement() {
           <p style={styles.emptyText}>{search ? 'No results found' : 'No entries in this category'}</p>
         </div>
       ) : (
-        <div style={styles.cardGrid}>
+        <div className="admin-card-grid" style={styles.cardGrid}>
           {filtered.map((s) => (
             <div key={s.id} style={styles.card}>
               {/* Card Top */}
@@ -208,7 +208,7 @@ export default function VerifyPayement() {
                 {s.transactionId && (
                   <div style={{ ...styles.detailItem, gridColumn: '1 / -1' }}>
                     <span style={styles.detailKey}>Transaction ID</span>
-                    <span style={{ ...styles.detailVal, fontFamily: 'monospace', fontSize: '12px' }}>
+                    <span style={{ ...styles.detailVal, fontFamily: 'monospace', fontSize: '12px', wordBreak: 'break-all' }}>
                       {s.transactionId}
                     </span>
                   </div>
@@ -287,6 +287,7 @@ const styles = {
     fontWeight: '500',
     color: '#374151',
     cursor: 'pointer',
+    flexShrink: 0,
   },
   summaryRow: {
     display: 'flex',
@@ -350,6 +351,7 @@ const styles = {
     backgroundColor: '#f4f6f9',
     padding: '4px',
     borderRadius: '10px',
+    flexShrink: 0,
   },
   filterBtn: {
     padding: '7px 16px',
@@ -409,6 +411,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
+    flexWrap: 'wrap',
   },
   avatar: {
     width: '44px',
@@ -471,6 +474,7 @@ const styles = {
     fontSize: '13px',
     color: '#374151',
     fontWeight: '500',
+    wordBreak: 'break-word',
   },
   verifyBtn: {
     display: 'flex',

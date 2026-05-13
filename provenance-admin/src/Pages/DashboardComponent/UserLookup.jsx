@@ -51,22 +51,22 @@ export default function UserLookup() {
   return (
     <div style={s.container}>
       {/* Header */}
-      <div style={s.header}>
-        <div style={s.headerIcon}>
+      <div className="admin-lookup-header" style={s.header}>
+        <div className="admin-lookup-header-icon" style={s.headerIcon}>
           <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="2" viewBox="0 0 24 24">
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
         </div>
         <div>
-          <h2 style={s.headerTitle}>User Lookup</h2>
+          <h2 className="admin-lookup-header-title" style={s.headerTitle}>User Lookup</h2>
           <p style={s.headerSub}>Search any participant by their Registration ID</p>
         </div>
       </div>
 
       {/* Search bar */}
-      <form onSubmit={handleSearch} style={s.searchRow}>
-        <div style={s.inputWrap}>
+      <form onSubmit={handleSearch} className="admin-search-row" style={s.searchRow}>
+        <div className="admin-input-wrap" style={s.inputWrap}>
           <span style={s.inputIcon}>
             <svg width="16" height="16" fill="none" stroke="#9ca3af" strokeWidth="2" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -112,7 +112,7 @@ export default function UserLookup() {
       {user && (
         <div style={s.card}>
           {/* User profile top */}
-          <div style={s.profileTop}>
+          <div className="admin-profile-top" style={s.profileTop}>
             <div style={s.avatarLarge}>
               {(user.name || 'U').charAt(0).toUpperCase()}
             </div>
@@ -127,14 +127,14 @@ export default function UserLookup() {
                 ID: {user.registrationId}
               </div>
             </div>
-            <div style={{ ...s.payBadge, color: statusColor(user.paymentStatus).color, background: statusColor(user.paymentStatus).bg, border: `1px solid ${statusColor(user.paymentStatus).border}` }}>
+            <div className="admin-pay-badge" style={{ ...s.payBadge, color: statusColor(user.paymentStatus).color, background: statusColor(user.paymentStatus).bg, border: `1px solid ${statusColor(user.paymentStatus).border}` }}>
               {user.paymentStatus || 'pending'}
             </div>
           </div>
 
           {/* Details Grid */}
           <div style={s.divider} />
-          <div style={s.grid}>
+          <div className="admin-user-grid" style={s.grid}>
             <InfoRow label="Mobile" value={user.mobile} />
             <InfoRow label="College Type" value={user.collegeType} />
             <InfoRow label="College Name" value={user.collegeName} />
@@ -153,7 +153,7 @@ export default function UserLookup() {
 
           {/* Registered Events Button */}
           <div style={s.divider} />
-          <div style={s.eventsHeader}>
+          <div className="admin-events-section-header" style={s.eventsHeader}>
             <div style={s.eventsTitle}>
               <svg width="16" height="16" fill="none" stroke="#4f46e5" strokeWidth="2" viewBox="0 0 24 24">
                 <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" />
@@ -173,7 +173,7 @@ export default function UserLookup() {
 
           {/* Events List */}
           {showEvents && (
-            <div style={s.eventsList}>
+            <div className="admin-events-list" style={s.eventsList}>
               {(!user.registeredEventsDetails || user.registeredEventsDetails.length === 0) ? (
                 <div style={s.emptyEvents}>No events registered yet.</div>
               ) : (
@@ -191,7 +191,7 @@ export default function UserLookup() {
 
 function InfoRow({ label, value }) {
   return (
-    <div style={s.infoRow}>
+    <div className="admin-user-info-row" style={s.infoRow}>
       <span style={s.infoLabel}>{label}</span>
       <span style={s.infoValue}>{value || '—'}</span>
     </div>
@@ -208,7 +208,7 @@ function EventCard({ ev, statusColor }) {
           {ev.eventPaymentStatus || 'pending'}
         </span>
       </div>
-      <div style={s.eventMeta}>
+      <div className="admin-event-meta" style={s.eventMeta}>
         <span>
           <strong>Enrolled:</strong> {ev.enrolledAt ? new Date(ev.enrolledAt).toLocaleString() : '—'}
         </span>
@@ -317,6 +317,7 @@ const s = {
     fontFamily: 'inherit',
     boxShadow: '0 4px 14px rgba(79,70,229,0.3)',
     transition: 'opacity 0.2s',
+    flexShrink: 0,
   },
   spinner: {
     width: '16px',
@@ -381,6 +382,7 @@ const s = {
     fontSize: '13px',
     color: '#6b7280',
     margin: '0 0 8px',
+    wordBreak: 'break-all',
   },
   regBadge: {
     display: 'inline-flex',
@@ -400,6 +402,7 @@ const s = {
     fontWeight: '600',
     textTransform: 'capitalize',
     marginLeft: 'auto',
+    flexShrink: 0,
   },
   divider: {
     height: '1px',
@@ -428,6 +431,7 @@ const s = {
     fontSize: '14px',
     fontWeight: '500',
     color: '#1e1e2e',
+    wordBreak: 'break-word',
   },
   eventsHeader: {
     display: 'flex',

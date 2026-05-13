@@ -69,7 +69,7 @@ export default function Dashboard() {
       )}
 
       {/* Sidebar */}
-      <aside style={{ ...styles.sidebar, ...(sidebarOpen ? styles.sidebarOpen : {}) }}>
+      <aside className={`admin-sidebar${sidebarOpen ? ' open' : ''}`} style={styles.sidebar}>
         {/* Logo */}
         <div style={styles.logoArea}>
           <div style={styles.logoIcon}>P</div>
@@ -116,27 +116,46 @@ export default function Dashboard() {
       {/* Main Content */}
       <div style={styles.mainWrapper}>
         {/* Top Bar */}
-        <header style={styles.topBar}>
+        <header className="admin-topbar" style={styles.topBar}>
           <div style={styles.topBarLeft}>
-            <button style={styles.hamburger} onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <button className="admin-hamburger" style={styles.hamburger} onClick={() => setSidebarOpen(!sidebarOpen)}>
               <span style={styles.hamLine} />
               <span style={styles.hamLine} />
               <span style={styles.hamLine} />
             </button>
             <div>
-              <h1 style={styles.pageTitle}>
+              <h1 className="admin-page-title" style={styles.pageTitle}>
                 {navItems.find(n => n.id === activePage)?.label}
               </h1>
               <p style={styles.breadcrumb}>Dashboard / {navItems.find(n => n.id === activePage)?.label}</p>
             </div>
           </div>
           <div style={styles.topBarRight}>
-            <div style={styles.badge}>Admin Panel</div>
+            <div className="admin-topbar-badge" style={styles.badge}>Admin Panel</div>
+            <button
+              onClick={() => {
+                localStorage.removeItem('adminLoggedIn');
+                window.location.reload();
+              }}
+              style={{
+                background: '#fee2e2',
+                color: '#ef4444',
+                border: 'none',
+                padding: '5px 12px',
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+              title="Logout"
+            >
+              Logout
+            </button>
           </div>
         </header>
 
         {/* Page Content */}
-        <main style={styles.pageContent}>
+        <main className="admin-page-content" style={styles.pageContent}>
           {renderPage()}
         </main>
       </div>

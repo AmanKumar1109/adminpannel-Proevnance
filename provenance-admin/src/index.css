@@ -1,5 +1,63 @@
 @import "tailwindcss";
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Overrides for Admin Dashboard Layout on Phone Screens */
+@media (max-width: 768px) {
+  .admin-sidebar {
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 40 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.15);
+  }
+  
+  .admin-sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  .admin-hamburger {
+    display: flex !important;
+  }
+
+  .admin-topbar {
+    padding: 0 16px !important;
+  }
+
+  .admin-page-content {
+    padding: 16px !important;
+  }
+
+  .admin-page-title {
+    font-size: 16px !important;
+  }
+
+  /* Reduce extra wide padding inside cards on small phone viewports */
+  div[style*="padding: 28px"], div[style*="padding:14px 28px"] {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  @media (max-width: 480px) {
+    .admin-topbar-badge {
+      display: none !important;
+    }
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake 0.2s ease-in-out 0s 2;
 }

@@ -87,23 +87,23 @@ export default function Home() {
   return (
     <div>
       {/* Welcome Banner */}
-      <div style={styles.banner}>
+      <div className="admin-banner" style={styles.banner}>
         <div>
-          <h2 style={styles.bannerTitle}>Welcome back, Admin 👋</h2>
+          <h2 className="admin-banner-title" style={styles.bannerTitle}>Welcome back, Admin 👋</h2>
           <p style={styles.bannerSub}>Here's what's happening with Provenance 6.0 today.</p>
         </div>
         <div style={styles.bannerBadge}>Live Event</div>
       </div>
 
       {/* Stats Grid */}
-      <div style={styles.statsGrid}>
+      <div className="admin-stats-grid" style={styles.statsGrid}>
         {stats.map((stat, i) => (
           <div key={i} style={{ ...styles.statCard, backgroundColor: stat.color }}>
             <div style={styles.statTop}>
               <div style={styles.statIconWrap}>
                 {stat.icon}
               </div>
-              <span style={styles.statValue}>{stat.value}</span>
+              <span className="admin-stat-value" style={styles.statValue}>{stat.value}</span>
             </div>
             <p style={styles.statLabel}>{stat.label}</p>
           </div>
@@ -111,7 +111,7 @@ export default function Home() {
       </div>
 
       {/* Quick Info */}
-      <div style={styles.infoRow}>
+      <div className="admin-info-row" style={styles.infoRow}>
         <div style={styles.infoCard}>
           <h3 style={styles.infoTitle}>Quick Actions</h3>
           <div style={styles.actionList}>
@@ -180,6 +180,7 @@ const styles = {
     fontWeight: '600',
     backdropFilter: 'blur(4px)',
     border: '1px solid rgba(255,255,255,0.3)',
+    flexShrink: 0,
   },
   statsGrid: {
     display: 'grid',
